@@ -1,4 +1,4 @@
-package com.magisterka.model.dto;
+package com.magisterka.model;
 
 import lombok.Data;
 

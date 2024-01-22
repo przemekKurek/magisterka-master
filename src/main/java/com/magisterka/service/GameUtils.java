@@ -2,6 +2,7 @@ package com.magisterka.service;
 
 import com.magisterka.model.CardDTO;
 import com.magisterka.model.Player;
+import com.magisterka.model.RoundInfo;
 
 import java.util.*;
 
@@ -42,6 +43,21 @@ public class GameUtils {
 
     public static void sortCardsDescending(List<CardDTO> cards) {
         cards.sort(Comparator.comparing(CardDTO::getCardNumber, Comparator.reverseOrder()));
+    }
+
+    static RoundInfo getRoundInfo(RoundInfo roundInfo, Player player1, Player player2, boolean playerCannotPlayWar, int counter) {
+        roundInfo.setRoundLength(counter);
+        if (playerCannotPlayWar) {
+            roundInfo.setRoundResult(player2.getCards().size() == 1 ? 1 : 2);
+        }
+        if (player2.getCards().isEmpty()) {
+            roundInfo.setRoundResult(1);
+        } else if (player1.getCards().isEmpty()) {
+            roundInfo.setRoundResult(2);
+        } else {
+            roundInfo.setRoundResult(0);
+        }
+        return roundInfo;
     }
 
 

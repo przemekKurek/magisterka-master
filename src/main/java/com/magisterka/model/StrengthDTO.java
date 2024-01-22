@@ -1,6 +1,5 @@
-package com.magisterka.model.dto;
+package com.magisterka.model;
 
-import com.magisterka.model.CardDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

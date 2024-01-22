@@ -1,8 +1,8 @@
 package com.magisterka.web;
 
 import com.magisterka.model.StatisticsDTO;
-import com.magisterka.model.dto.PlayersStrategyDTO;
-import com.magisterka.model.dto.StrengthDTO;
+import com.magisterka.model.PlayersStrategyDTO;
+import com.magisterka.model.StrengthDTO;
 import com.magisterka.service.CycleService;
 import com.magisterka.service.GameService;
 import lombok.AllArgsConstructor;
@@ -19,20 +19,6 @@ public class GameController {
     private final GameService gameService;
     private final CycleService cycleService;
 
-    @GetMapping(value = "/two")
-    public int game() {
-        return gameService.game(2);
-    }
-
-    @GetMapping(value = "/two/{strategy}")
-    public Integer gameWithStrategy(@PathVariable String strategy) {
-        return gameService.gameWithStrategy(strategy);
-    }
-
-    @GetMapping(value = "/one/{strategy}/statistics")
-    public StatisticsDTO gameWithStrategyForStatistics(@PathVariable String strategy) {
-         return gameService.getStatistics(strategy);
-    }
 
     @PostMapping(value = "/statistics")
     public StatisticsDTO gameWithStrategyForStatistics(@RequestBody PlayersStrategyDTO playersStrategyDTO) {

@@ -3,8 +3,8 @@ package com.magisterka.service;
 import com.magisterka.model.CardDTO;
 import com.magisterka.model.Player;
 import com.magisterka.model.StatisticsDTO;
-import com.magisterka.model.dto.PlayersStrategyDTO;
-import com.magisterka.model.dto.RoundInfo;
+import com.magisterka.model.PlayersStrategyDTO;
+import com.magisterka.model.RoundInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -91,12 +91,20 @@ public class CycleService {
         List<Integer> register = new ArrayList<>();
         player1.setStrategySequence(playersStrategyDTO.getFisrtPlayerStrategySequence());
         player2.setStrategySequence(playersStrategyDTO.getSecondPlayerStrategySequence());
+        player1.setWarStrategySequence(playersStrategyDTO.getFisrtPlayerWarStrategySequence());
+        player2.setWarStrategySequence(playersStrategyDTO.getSecondPlayerWarStrategySequence());
         GameUtils.assignCardsToPlayers(cards, player1, player2);
+        boolean playerCannotPlayWar = false;
+
         int counter = 0;
         while (GameUtils.playerHasCards(player1) && GameUtils.playerHasCards(player2) && counter < 10000) {
             if (GameUtils.getPlayerCard(player1).getRank() > GameUtils.getPlayerCard(player2).getRank()) {
                 gameService.handlePlayerWinWithStrategyAndSetRegister(player1, player2, true, register);
             } else if (Objects.equals(GameUtils.getPlayerCard(player1).getRank(), GameUtils.getPlayerCard(player2).getRank())) {
+                if (player1.getCards().size() == 1 || player2.getCards().size() == 1) {
+                    playerCannotPlayWar = true;
+                    break;
+                }
                 gameService.handleWarAndSetRegister(player1, player2, true, new ArrayList<>(), register);
             } else {
                 gameService.handlePlayerWinWithStrategyAndSetRegister(player1, player2, false, register);
@@ -112,16 +120,9 @@ public class CycleService {
                 }
             }
         }
-        roundInfo.setRoundLength(counter);
-        if (player2.getCards().isEmpty()) {
-            roundInfo.setRoundResult(1);
-        } else if (player1.getCards().isEmpty()) {
-            roundInfo.setRoundResult(2);
-        } else {
-            roundInfo.setRoundResult(0);
-        }
-        return roundInfo;
+        return GameUtils.getRoundInfo(roundInfo, player1, player2, playerCannotPlayWar, counter);
     }
+
 
     private RoundInfo gameWithBreakingCycles(PlayersStrategyDTO playersStrategyDTO) {
         RoundInfo roundInfo = new RoundInfo();
@@ -131,12 +132,19 @@ public class CycleService {
         List<Integer> register = new ArrayList<>();
         player1.setStrategySequence(playersStrategyDTO.getFisrtPlayerStrategySequence());
         player2.setStrategySequence(playersStrategyDTO.getSecondPlayerStrategySequence());
+        player1.setWarStrategySequence(playersStrategyDTO.getFisrtPlayerWarStrategySequence());
+        player2.setWarStrategySequence(playersStrategyDTO.getSecondPlayerWarStrategySequence());
         GameUtils.assignCardsToPlayers(cards, player1, player2);
+        boolean playerCannotPlayWar = false;
         int counter = 0;
         while (GameUtils.playerHasCards(player1) && GameUtils.playerHasCards(player2) && counter < 1000000) {
             if (GameUtils.getPlayerCard(player1).getRank() > GameUtils.getPlayerCard(player2).getRank()) {
                 gameService.handlePlayerWinWithStrategyAndSetRegister(player1, player2, true, register);
             } else if (Objects.equals(GameUtils.getPlayerCard(player1).getRank(), GameUtils.getPlayerCard(player2).getRank())) {
+                if (player1.getCards().size() == 1 || player2.getCards().size() == 1) {
+                    playerCannotPlayWar = true;
+                    break;
+                }
                 gameService.handleWarAndSetRegister(player1, player2, true, new ArrayList<>(), register);
             } else {
                 gameService.handlePlayerWinWithStrategyAndSetRegister(player1, player2, false, register);
@@ -168,15 +176,7 @@ public class CycleService {
                 register.subList(0, 2000).clear();
             }
         }
-        roundInfo.setRoundLength(counter);
-        if (player2.getCards().isEmpty()) {
-            roundInfo.setRoundResult(1);
-        } else if (player1.getCards().isEmpty()) {
-            roundInfo.setRoundResult(2);
-        } else {
-            roundInfo.setRoundResult(0);
-        }
-        return roundInfo;
+        return GameUtils.getRoundInfo(roundInfo, player1, player2, playerCannotPlayWar, counter);
     }
 
 
