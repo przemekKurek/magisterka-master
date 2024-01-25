@@ -353,23 +353,19 @@ public class GameService {
             if (GameUtils.getPlayerCard(player1).getRank() > GameUtils.getPlayerCard(player2).getRank()) {
                 handlePlayerWinWithStrategy(player1, player2, true);
             } else if (Objects.equals(GameUtils.getPlayerCard(player1).getRank(), GameUtils.getPlayerCard(player2).getRank())) {
+                warCounter++;
                 if (player1.getCards().size() == 1 || player2.getCards().size() == 1) {
                     playerCannotPlayWar = true;
                     break;
                 }
                 handleWar(player1, player2, true, new ArrayList<>());
-                warCounter++;
             } else {
                 handlePlayerWinWithStrategy(player1, player2, false);
             }
             counter++;
         }
-//        log.info("Player1 has " + player1.getCards().size() + " cards.");
-//        log.info("Player2 has " + player2.getCards().size() + " cards.");
-//        log.info("War counter " + warCounter);
-//        log.info("Round counter " + counter);
         RoundInfo roundInfo = new RoundInfo();
-        return GameUtils.getRoundInfo(roundInfo, player1, player2, playerCannotPlayWar, counter);
+        return GameUtils.getRoundInfo(roundInfo, player1, player2, playerCannotPlayWar, counter, warCounter);
     }
 
     public StatisticsDTO getStatisticsForTwoPlayers(PlayersStrategyDTO playersStrategyDTO) {
@@ -377,6 +373,7 @@ public class GameService {
         int player2WinsCounter = 0;
         int drawCounter = 0;
         int roundsCounter = 0;
+        int warCounter = 0;
         for (int i = 0; i < GAME_AMOUNT; i++) {
             RoundInfo result = gameWithStrategies(playersStrategyDTO);
             if (result.getRoundResult() == 1) {
@@ -390,6 +387,8 @@ public class GameService {
                 log.info("Computed " + i / 1000 + "%");
             }
             roundsCounter += result.getRoundLength();
+            warCounter += result.getWarCounter();
+
         }
         StatisticsDTO stats = new StatisticsDTO();
         stats.setFirstPlayerWonGames(player1WinsCounter * 100.0 / GAME_AMOUNT);
@@ -397,6 +396,7 @@ public class GameService {
         stats.setDraws(drawCounter * 100.0 / GAME_AMOUNT);
         stats.setPlayersStrategyDTO(playersStrategyDTO);
         stats.setAverageAmountOfRounds(roundsCounter / GAME_AMOUNT);
+        stats.setAverageAmountOfWars(warCounter / GAME_AMOUNT);
 
         return stats;
     }
@@ -439,6 +439,7 @@ public class GameService {
         int player2WinsCounter = 0;
         int drawCounter = 0;
         int roundsCounter = 0;
+        int warCounter = 0;
         for (int i = 0; i < GAME_AMOUNT; i++) {
             RoundInfo result = gameWithStrategiesForStrenghtComparison(strengthDTO);
             if (result.getRoundResult() == 1) {
@@ -452,6 +453,7 @@ public class GameService {
                 log.info("Computed " + i / 1000 + "%");
             }
             roundsCounter += result.getRoundLength();
+            warCounter += result.getWarCounter();
 
         }
         StatisticsDTO stats = new StatisticsDTO();
@@ -460,6 +462,7 @@ public class GameService {
         stats.setDraws(drawCounter * 100.0 / GAME_AMOUNT);
         stats.setPlayersStrategyDTO(strengthDTO.getPlayersStrategyDTO());
         stats.setAverageAmountOfRounds(roundsCounter / GAME_AMOUNT);
+        stats.setAverageAmountOfWars(warCounter / GAME_AMOUNT);
 
         return stats;
     }
@@ -487,12 +490,12 @@ public class GameService {
             if (GameUtils.getPlayerCard(player1).getRank() > GameUtils.getPlayerCard(player2).getRank()) {
                 handlePlayerWinWithStrategy(player1, player2, true);
             } else if (Objects.equals(GameUtils.getPlayerCard(player1).getRank(), GameUtils.getPlayerCard(player2).getRank())) {
+                warCounter++;
                 if (player1.getCards().size() == 1 || player2.getCards().size() == 1) {
                     playerCannotPlayWar = true;
                     break;
                 }
                 handleWar(player1, player2, true, new ArrayList<>());
-                warCounter++;
             } else {
                 handlePlayerWinWithStrategy(player1, player2, false);
             }
@@ -503,7 +506,7 @@ public class GameService {
 //        log.info("Player2 has " + player2.getCards().size() + " cards.");
 //        log.info("War counter " + warCounter);
 //        log.info("Round counter " + counter);
-        return GameUtils.getRoundInfo(roundInfo, player1, player2, playerCannotPlayWar, counter);
+        return GameUtils.getRoundInfo(roundInfo, player1, player2, playerCannotPlayWar, counter, warCounter);
     }
 
 
