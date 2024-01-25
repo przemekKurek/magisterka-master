@@ -27,6 +27,7 @@ public class CycleService {
         int player2WinsCounter = 0;
         int drawCounter = 0;
         int roundsCounter = 0;
+        int warCounter = 0;
         StatisticsDTO stats = new StatisticsDTO();
         for (int i = 0; i < GAME_AMOUNT; i++) {
             RoundInfo roundInfo = gameWithCyclesFinder(playersStrategyDTO);
@@ -40,6 +41,7 @@ public class CycleService {
             }
             log.info("Game number " + i);
             roundsCounter += roundInfo.getRoundLength();
+            warCounter += roundInfo.getWarCounter();
             if (roundInfo.getCycle() != null) {
                 stats.getDetectedCycles().add(roundInfo.getCycle());
             }
@@ -49,6 +51,7 @@ public class CycleService {
         stats.setDraws(drawCounter * 100.0 / GAME_AMOUNT);
         stats.setPlayersStrategyDTO(playersStrategyDTO);
         stats.setAverageAmountOfRounds(roundsCounter / GAME_AMOUNT);
+        stats.setAverageAmountOfWars(warCounter / GAME_AMOUNT);
         return stats;
     }
 
@@ -58,6 +61,7 @@ public class CycleService {
         int player2WinsCounter = 0;
         int drawCounter = 0;
         int roundsCounter = 0;
+        int warCounter = 0;
         StatisticsDTO stats = new StatisticsDTO();
         for (int i = 0; i < GAME_AMOUNT; i++) {
             RoundInfo roundInfo = gameWithBreakingCycles(playersStrategyDTO);
@@ -71,6 +75,7 @@ public class CycleService {
             }
             log.info("Game number " + i);
             roundsCounter += roundInfo.getRoundLength();
+            warCounter += roundInfo.getWarCounter();
             if (roundInfo.getCycle() != null) {
                 stats.getDetectedCycles().add(roundInfo.getCycle());
             }
@@ -80,6 +85,7 @@ public class CycleService {
         stats.setDraws(drawCounter * 100.0 / GAME_AMOUNT);
         stats.setPlayersStrategyDTO(playersStrategyDTO);
         stats.setAverageAmountOfRounds(roundsCounter / GAME_AMOUNT);
+        stats.setAverageAmountOfWars(warCounter / GAME_AMOUNT);
         return stats;
     }
 

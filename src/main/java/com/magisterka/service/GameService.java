@@ -373,6 +373,7 @@ public class GameService {
         int player2WinsCounter = 0;
         int drawCounter = 0;
         int roundsCounter = 0;
+        int warCounter = 0;
         for (int i = 0; i < GAME_AMOUNT; i++) {
             RoundInfo result = gameWithStrategies(playersStrategyDTO);
             if (result.getRoundResult() == 1) {
@@ -386,6 +387,8 @@ public class GameService {
                 log.info("Computed " + i / 1000 + "%");
             }
             roundsCounter += result.getRoundLength();
+            warCounter += result.getWarCounter();
+
         }
         StatisticsDTO stats = new StatisticsDTO();
         stats.setFirstPlayerWonGames(player1WinsCounter * 100.0 / GAME_AMOUNT);
@@ -393,6 +396,7 @@ public class GameService {
         stats.setDraws(drawCounter * 100.0 / GAME_AMOUNT);
         stats.setPlayersStrategyDTO(playersStrategyDTO);
         stats.setAverageAmountOfRounds(roundsCounter / GAME_AMOUNT);
+        stats.setAverageAmountOfWars(warCounter / GAME_AMOUNT);
 
         return stats;
     }
@@ -435,6 +439,7 @@ public class GameService {
         int player2WinsCounter = 0;
         int drawCounter = 0;
         int roundsCounter = 0;
+        int warCounter = 0;
         for (int i = 0; i < GAME_AMOUNT; i++) {
             RoundInfo result = gameWithStrategiesForStrenghtComparison(strengthDTO);
             if (result.getRoundResult() == 1) {
@@ -448,6 +453,7 @@ public class GameService {
                 log.info("Computed " + i / 1000 + "%");
             }
             roundsCounter += result.getRoundLength();
+            warCounter += result.getWarCounter();
 
         }
         StatisticsDTO stats = new StatisticsDTO();
@@ -456,6 +462,7 @@ public class GameService {
         stats.setDraws(drawCounter * 100.0 / GAME_AMOUNT);
         stats.setPlayersStrategyDTO(strengthDTO.getPlayersStrategyDTO());
         stats.setAverageAmountOfRounds(roundsCounter / GAME_AMOUNT);
+        stats.setAverageAmountOfWars(warCounter / GAME_AMOUNT);
 
         return stats;
     }
