@@ -1,16 +1,13 @@
 package com.magisterka.service;
 
-import com.magisterka.model.CardDTO;
-import com.magisterka.model.Player;
-import com.magisterka.model.StatisticsDTO;
-import com.magisterka.model.PlayersStrategyDTO;
-import com.magisterka.model.RoundInfo;
-import com.magisterka.model.StrengthDTO;
+import com.magisterka.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -156,38 +153,41 @@ public class GameService {
     }
 
 
-
     private void sortCardsAccordingToStrategy(Player player1, Player player2, List<CardDTO> cardsToGet, boolean hasPlayer1Won) {
         Player winnerOfTheRound = hasPlayer1Won ? player1 : player2;
         Player loserOfTheRound = hasPlayer1Won ? player2 : player1;
-        if (getStrategy(winnerOfTheRound) == 'H') {
-            GameUtils.sortCardsDescending(cardsToGet);
-        } else if (getStrategy(winnerOfTheRound) == 'L') {
-            GameUtils.sortCardsAscending(cardsToGet);
-        } else if (getStrategy(winnerOfTheRound) == 'R') {
-            GameUtils.shuffleDeck(cardsToGet);
-        } else if (getStrategy(winnerOfTheRound) == 'G' || getStrategy(winnerOfTheRound) == 'A' || getStrategy(winnerOfTheRound) == 'N') {
-            if (getStrategy(winnerOfTheRound) == 'G') {
-                distributeCardsGreedy(cardsToGet, winnerOfTheRound, loserOfTheRound, 'G');
-            } else if (getStrategy(winnerOfTheRound) == 'A') {
-                distributeCardsGreedy(cardsToGet, winnerOfTheRound, loserOfTheRound, 'A');
-            } else {
-                distributeCardsGreedy(cardsToGet, winnerOfTheRound, loserOfTheRound, 'N');
+        if (cardsToGet.size() == 2) {
+            if (getStrategy(winnerOfTheRound) == 'H') {
+                GameUtils.sortCardsDescending(cardsToGet);
+            } else if (getStrategy(winnerOfTheRound) == 'L') {
+                GameUtils.sortCardsAscending(cardsToGet);
+            } else if (getStrategy(winnerOfTheRound) == 'R') {
+                GameUtils.shuffleDeck(cardsToGet);
+            } else if ("GANBPS".contains(String.valueOf(getStrategy(winnerOfTheRound)))) {
+                distributeCardsGreedy(cardsToGet, winnerOfTheRound, loserOfTheRound, getStrategy(winnerOfTheRound));
             }
-        }
-        else if (getWarStrategy(winnerOfTheRound) == 'D') {
-            GameUtils.sortCardsDescending(cardsToGet);
-        } else if (getWarStrategy(winnerOfTheRound) == 'A') {
-            GameUtils.sortCardsAscending(cardsToGet);
-        }  else if (getWarStrategy(winnerOfTheRound) == 'R') {
-            GameUtils.shuffleDeck(cardsToGet);
+        } else {
+            if (getWarStrategy(winnerOfTheRound) == 'D') {
+                GameUtils.sortCardsDescending(cardsToGet);
+            } else if (getWarStrategy(winnerOfTheRound) == 'A') {
+                GameUtils.sortCardsAscending(cardsToGet);
+            } else if (getWarStrategy(winnerOfTheRound) == 'R') {
+                GameUtils.shuffleDeck(cardsToGet);
+            }
         }
     }
 
     private void distributeCardsGreedy(List<CardDTO> cardsToGet, Player player1, Player player2, char greedyOption) {
         if (player1.getCards().size() >= player2.getCards().size()) {
-            GameUtils.shuffleDeck(cardsToGet);
+            if (greedyOption == 'P') {
+                GameUtils.sortCardsDescending(cardsToGet);
+            } else {
+                GameUtils.shuffleDeck(cardsToGet);
+            }
         } else {
+            if ((greedyOption == 'B' || greedyOption == 'P') && player1.getCards().size() + 4 >= player2.getCards().size()) {
+                greedyOption = 'G';
+            }
             int player1DeckSize = player1.getCards().size();
             List<CardDTO> player2CardsToCompare = new ArrayList<>();
             player2CardsToCompare.add(player2.getCards().get(player1DeckSize));
@@ -212,11 +212,50 @@ public class GameService {
             boolean ww = c1 < p1 && c2 < p2;
             if (bb || bw || ww) {
                 GameUtils.sortCardsDescending(cardsToGet);
-            } else if (be || eb || ee || ew || we) {
+            } else if (wb) {
+                GameUtils.sortCardsAscending(cardsToGet);
+            } else if (be || eb || ee || ew || we) {    // possibilty to avoid or force war
                 if (greedyOption == 'A') {
                     GameUtils.sortCardsDescending(cardsToGet);
                 } else if (greedyOption == 'N') {
                     GameUtils.sortCardsAscending(cardsToGet);
+                } else if (greedyOption == 'B') {
+                    if (eb || ee || ew) {
+                        Integer c3 = player2.getCards().get(player1DeckSize + 2).getRank();
+                        sortCardsGreedyProbability(c3, cardsToGet);
+                    } else {
+                        Integer c4 = player2.getCards().get(player1DeckSize + 3).getRank();
+                        sortCardsGreedyProbability(c4, cardsToGet);
+                    }
+                } else if (greedyOption == 'P') {
+                    player2CardsToCompare.add(player2.getCards().get(player1DeckSize + 2));
+                    player2CardsToCompare.add(player2.getCards().get(player1DeckSize + 3));
+                    if (eb || ee || ew) {
+                        CardDTO cardToCheck = checkYourNextCard(player1, player2, true, cardsToGet);
+                        if (cardToCheck == null || cardToCheck.getRank() < player2.getCards().get(player1DeckSize + 2).getRank()) {
+                            GameUtils.sortCardsDescending(cardsToGet);
+                        } else {
+                            GameUtils.sortCardsAscending(cardsToGet);
+                        }
+                    } else {
+                        CardDTO cardToCheck = checkYourNextCard(player1, player2, false, cardsToGet);
+                        if (cardToCheck == null || cardToCheck.getRank() < player2.getCards().get(player1DeckSize + 3).getRank()) {
+                            GameUtils.sortCardsDescending(cardsToGet);
+                        } else {
+                            GameUtils.sortCardsAscending(cardsToGet);
+                        }
+                    }
+                } else if (greedyOption == 'S') {
+                    Integer card1Rank = cardsToGet.get(0).getRank();
+                    Integer card2Rank = cardsToGet.get(1).getRank();
+                    if (player2CardsToCompare.get(0).getRank() == 12 || player2CardsToCompare.get(1).getRank() == 12 || player2CardsToCompare.get(0).getRank() + player2CardsToCompare.get(1).getRank() > 18 ) {
+                        GameUtils.sortCardsAscending(cardsToGet);
+                    }
+                    if (card1Rank == 12 || card2Rank == 12 || card1Rank + card2Rank > 4) {
+                        GameUtils.sortCardsDescending(cardsToGet);
+                    } else {
+                        GameUtils.sortCardsAscending(cardsToGet);
+                    }
                 } else {
                     if (moreAces) {
                         GameUtils.sortCardsDescending(cardsToGet);
@@ -224,10 +263,57 @@ public class GameService {
                         GameUtils.sortCardsAscending(cardsToGet);
                     }
                 }
-            } else if (wb) {
-                GameUtils.sortCardsAscending(cardsToGet);
             }
         }
+    }
+
+    private void sortCardsGreedyProbability(Integer cardRank, List<CardDTO> cardsToGet) {
+        if (cardRank <= 2) {
+            GameUtils.sortCardsAscending(cardsToGet);
+        } else {
+            GameUtils.sortCardsDescending(cardsToGet);
+        }
+    }
+
+    private CardDTO checkYourNextCard(Player p1, Player p2, boolean firstCard, List<CardDTO> cardsToGet) {
+        Player tempP1 = new Player(p1);
+        Player tempP2 = new Player(p2);
+        tempP1.winCounterIncrement();
+        tempP1.getCards().addAll(cardsToGet);
+        tempP1.setStrategySequence("H");
+        if (tempP1.getCards().size() < 4) {
+            return null;
+        }
+        Integer startingDeckSize = tempP1.getCards().size();
+        Integer counter = 0;
+        while (GameUtils.playerHasCards(tempP1) && GameUtils.playerHasCards(tempP2) && counter < startingDeckSize - 2) {
+            counter++;
+            if (GameUtils.getPlayerCard(tempP1).getRank() > GameUtils.getPlayerCard(tempP2).getRank()) {
+                handlePlayerWinWithStrategy(tempP1, tempP2, true);
+                if (firstCard) {
+                    return tempP1.getCards().get(tempP1.getCards().size() - 2);
+                } else {
+                    return tempP1.getCards().get(tempP1.getCards().size() - 1);
+                }
+            } else if (Objects.equals(GameUtils.getPlayerCard(tempP1).getRank(), GameUtils.getPlayerCard(tempP2).getRank())) {
+                if (tempP1.getCards().size() == 1 || tempP1.getCards().size() == 2) {
+                    return null;
+                }
+                Integer deckSizeBeforeWar = tempP1.getCards().size();
+                handleWar(tempP1, tempP2, true, new ArrayList<>());
+                if (deckSizeBeforeWar < tempP1.getCards().size()) {
+                    if (firstCard) {
+                        return tempP1.getCards().get(tempP1.getCards().size() - 2);
+                    } else {
+                        return tempP1.getCards().get(tempP1.getCards().size() - 1);
+                    }
+                }
+            } else {
+                handlePlayerWinWithStrategy(tempP1, tempP2, false);
+            }
+        }
+        return null;
+
     }
 
 
@@ -257,40 +343,37 @@ public class GameService {
         player1.setWarStrategySequence(playersStrategyDTO.getFisrtPlayerWarStrategySequence());
         player2.setWarStrategySequence(playersStrategyDTO.getSecondPlayerWarStrategySequence());
         GameUtils.assignCardsToPlayers(cards, player1, player2);
+        boolean playerCannotPlayWar = false;
         int counter = 0;
         int warCounter = 0;
-        while (GameUtils.playerHasCards(player1) && GameUtils.playerHasCards(player2) && counter < 10000) {
+        while (GameUtils.playerHasCards(player1) && GameUtils.playerHasCards(player2) && counter < 100000) {
             if (GameUtils.getPlayerCard(player1).getRank() > GameUtils.getPlayerCard(player2).getRank()) {
                 handlePlayerWinWithStrategy(player1, player2, true);
             } else if (Objects.equals(GameUtils.getPlayerCard(player1).getRank(), GameUtils.getPlayerCard(player2).getRank())) {
-                handlePlayerWarWinWithStrategy(player1, player2, true, new ArrayList<>());
+                if (player1.getCards().size() == 1 || player2.getCards().size() == 1) {
+                    playerCannotPlayWar = true;
+                    break;
+                }
+                handleWar(player1, player2, true, new ArrayList<>());
                 warCounter++;
             } else {
                 handlePlayerWinWithStrategy(player1, player2, false);
             }
             counter++;
         }
-        log.info("Player1 has " + player1.getCards().size() + " cards.");
-        log.info("Player2 has " + player2.getCards().size() + " cards.");
-        log.info("War counter " + warCounter);
-        log.info("Round counter " + counter);
+//        log.info("Player1 has " + player1.getCards().size() + " cards.");
+//        log.info("Player2 has " + player2.getCards().size() + " cards.");
+//        log.info("War counter " + warCounter);
+//        log.info("Round counter " + counter);
         RoundInfo roundInfo = new RoundInfo();
-        roundInfo.setRoundLength(counter);
-        if (player2.getCards().isEmpty()) {
-            roundInfo.setRoundResult(1);
-        } else if (player1.getCards().isEmpty()) {
-            roundInfo.setRoundResult(2);
-        } else {
-            roundInfo.setRoundResult(0);
-        }
-        return roundInfo;
+        return GameUtils.getRoundInfo(roundInfo, player1, player2, playerCannotPlayWar, counter);
     }
 
     public StatisticsDTO getStatisticsForTwoPlayers(PlayersStrategyDTO playersStrategyDTO) {
         int player1WinsCounter = 0;
         int player2WinsCounter = 0;
         int drawCounter = 0;
-        int gameAmount = 100000;
+        int gameAmount = 10000;
         int roundsCounter = 0;
         for (int i = 0; i < gameAmount; i++) {
             RoundInfo result = gameWithStrategies(playersStrategyDTO);
@@ -310,31 +393,32 @@ public class GameService {
         stats.setFirstPlayerWonGames(player1WinsCounter * 100.0 / gameAmount);
         stats.setSecondPlayerWonGames(player2WinsCounter * 100.0 / gameAmount);
         stats.setDraws(drawCounter * 100.0 / gameAmount);
-        stats.setFirstPlayerStrategy(playersStrategyDTO.getFisrtPlayerStrategySequence());
-        stats.setSecondPlayerStrategy(playersStrategyDTO.getSecondPlayerStrategySequence());
+        stats.setPlayersStrategyDTO(playersStrategyDTO);
         stats.setAverageAmountOfRounds(roundsCounter / gameAmount);
 
         return stats;
     }
 
-    public List<StatisticsDTO> compareStrategyWithBasicStrategies(String strategy) {
+    public List<StatisticsDTO> compareStrategyWithBasicStrategies(PlayersStrategyDTO playersStrategyDTO) {
         List<StatisticsDTO> result = new ArrayList<>();
-        PlayersStrategyDTO toRandom = new PlayersStrategyDTO(strategy, "R");
+        String strategy = playersStrategyDTO.getFisrtPlayerStrategySequence();
+        String warStrategy = playersStrategyDTO.getFisrtPlayerWarStrategySequence();
+        PlayersStrategyDTO toRandom = new PlayersStrategyDTO(strategy, warStrategy, "R", "R");
         StatisticsDTO compareToRandom = getStatisticsForTwoPlayers(toRandom);
 
-        PlayersStrategyDTO toGetHigher = new PlayersStrategyDTO(strategy, "H");
+        PlayersStrategyDTO toGetHigher = new PlayersStrategyDTO(strategy, warStrategy, "H", "R");
         StatisticsDTO compareToGetHigher = getStatisticsForTwoPlayers(toGetHigher);
 
-        PlayersStrategyDTO toGetLower = new PlayersStrategyDTO(strategy, "L");
+        PlayersStrategyDTO toGetLower = new PlayersStrategyDTO(strategy, warStrategy, "L", "R");
         StatisticsDTO compareToGetLower = getStatisticsForTwoPlayers(toGetLower);
 
-        PlayersStrategyDTO greedy = new PlayersStrategyDTO(strategy, "G");
+        PlayersStrategyDTO greedy = new PlayersStrategyDTO(strategy, warStrategy, "G", "R");
         StatisticsDTO compareToGreedy = getStatisticsForTwoPlayers(greedy);
 
-        PlayersStrategyDTO greedyA = new PlayersStrategyDTO(strategy, "A");
+        PlayersStrategyDTO greedyA = new PlayersStrategyDTO(strategy, warStrategy, "A", "R");
         StatisticsDTO compareToGreedyA = getStatisticsForTwoPlayers(greedyA);
 
-        PlayersStrategyDTO greedyN = new PlayersStrategyDTO(strategy, "N");
+        PlayersStrategyDTO greedyN = new PlayersStrategyDTO(strategy, warStrategy, "N", "R");
         StatisticsDTO compareToGreedyN = getStatisticsForTwoPlayers(greedyN);
 
         result.add(compareToRandom);
@@ -352,7 +436,7 @@ public class GameService {
         int player1WinsCounter = 0;
         int player2WinsCounter = 0;
         int drawCounter = 0;
-        int gameAmount = 1000;
+        int gameAmount = 10000;
         int roundsCounter = 0;
         for (int i = 0; i < gameAmount; i++) {
             RoundInfo result = gameWithStrategiesForStrenghtComparison(strengthDTO);
@@ -373,9 +457,8 @@ public class GameService {
         stats.setFirstPlayerWonGames(player1WinsCounter * 100.0 / gameAmount);
         stats.setSecondPlayerWonGames(player2WinsCounter * 100.0 / gameAmount);
         stats.setDraws(drawCounter * 100.0 / gameAmount);
-        stats.setFirstPlayerStrategy(strengthDTO.getPlayersStrategyDTO().getFisrtPlayerStrategySequence());
-        stats.setSecondPlayerStrategy(strengthDTO.getPlayersStrategyDTO().getSecondPlayerStrategySequence());
-        stats.setAverageAmountOfRounds(roundsCounter/gameAmount);
+        stats.setPlayersStrategyDTO(strengthDTO.getPlayersStrategyDTO());
+        stats.setAverageAmountOfRounds(roundsCounter / gameAmount);
 
         return stats;
     }
@@ -386,6 +469,8 @@ public class GameService {
         Player player2 = new Player();
         player1.setStrategySequence(strengthDTO.getPlayersStrategyDTO().getFisrtPlayerStrategySequence());
         player2.setStrategySequence(strengthDTO.getPlayersStrategyDTO().getSecondPlayerStrategySequence());
+        player1.setWarStrategySequence(strengthDTO.getPlayersStrategyDTO().getFisrtPlayerWarStrategySequence());
+        player2.setWarStrategySequence(strengthDTO.getPlayersStrategyDTO().getSecondPlayerWarStrategySequence());
         List<CardDTO> player1Cards = new ArrayList<>();
         List<CardDTO> player2Cards = new ArrayList<>();
         player1Cards.addAll(strengthDTO.getPlayer1Cards());
@@ -397,7 +482,7 @@ public class GameService {
         boolean playerCannotPlayWar = false;
         int counter = 0;
         int warCounter = 0;
-        while (GameUtils.playerHasCards(player1) && GameUtils.playerHasCards(player2) && counter < 100000) {
+        while (GameUtils.playerHasCards(player1) && GameUtils.playerHasCards(player2) && counter < 10000) {
             if (GameUtils.getPlayerCard(player1).getRank() > GameUtils.getPlayerCard(player2).getRank()) {
                 handlePlayerWinWithStrategy(player1, player2, true);
             } else if (Objects.equals(GameUtils.getPlayerCard(player1).getRank(), GameUtils.getPlayerCard(player2).getRank())) {
@@ -413,10 +498,10 @@ public class GameService {
             counter++;
         }
         RoundInfo roundInfo = new RoundInfo();
-        log.info("Player1 has " + player1.getCards().size() + " cards.");
-        log.info("Player2 has " + player2.getCards().size() + " cards.");
-        log.info("War counter " + warCounter);
-        log.info("Round counter " + counter);
+//        log.info("Player1 has " + player1.getCards().size() + " cards.");
+//        log.info("Player2 has " + player2.getCards().size() + " cards.");
+//        log.info("War counter " + warCounter);
+//        log.info("Round counter " + counter);
         return GameUtils.getRoundInfo(roundInfo, player1, player2, playerCannotPlayWar, counter);
     }
 

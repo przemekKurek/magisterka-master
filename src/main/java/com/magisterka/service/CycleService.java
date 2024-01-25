@@ -45,8 +45,7 @@ public class CycleService {
         stats.setFirstPlayerWonGames(player1WinsCounter * 100.0 / GAME_AMOUNT);
         stats.setSecondPlayerWonGames(player2WinsCounter * 100.0 / GAME_AMOUNT);
         stats.setDraws(drawCounter * 100.0 / GAME_AMOUNT);
-        stats.setFirstPlayerStrategy(playersStrategyDTO.getFisrtPlayerStrategySequence());
-        stats.setSecondPlayerStrategy(playersStrategyDTO.getSecondPlayerStrategySequence());
+        stats.setPlayersStrategyDTO(playersStrategyDTO);
         stats.setAverageAmountOfRounds(roundsCounter / GAME_AMOUNT);
         return stats;
     }
@@ -77,8 +76,7 @@ public class CycleService {
         stats.setFirstPlayerWonGames(player1WinsCounter * 100.0 / GAME_AMOUNT);
         stats.setSecondPlayerWonGames(player2WinsCounter * 100.0 / GAME_AMOUNT);
         stats.setDraws(drawCounter * 100.0 / GAME_AMOUNT);
-        stats.setFirstPlayerStrategy(playersStrategyDTO.getFisrtPlayerStrategySequence());
-        stats.setSecondPlayerStrategy(playersStrategyDTO.getSecondPlayerStrategySequence());
+        stats.setPlayersStrategyDTO(playersStrategyDTO);
         stats.setAverageAmountOfRounds(roundsCounter / GAME_AMOUNT);
         return stats;
     }

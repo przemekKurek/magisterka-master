@@ -49,6 +49,7 @@ public class GameUtils {
         roundInfo.setRoundLength(counter);
         if (playerCannotPlayWar) {
             roundInfo.setRoundResult(player2.getCards().size() == 1 ? 1 : 2);
+            return roundInfo;
         }
         if (player2.getCards().isEmpty()) {
             roundInfo.setRoundResult(1);

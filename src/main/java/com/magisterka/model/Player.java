@@ -1,11 +1,13 @@
 package com.magisterka.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 public class Player {
     private List<CardDTO> cards = new ArrayList<>();
     private String strategySequence;
@@ -18,7 +20,16 @@ public class Player {
     }
 
     public void warWinCounterIncrement() {
-        this.winCounter++;
+        this.warWinCounter++;
     }
+
+    public Player(Player other) {
+        this.cards = new ArrayList<>(other.cards);  // Creating a new list with the same elements
+        this.strategySequence = other.strategySequence;
+        this.warStrategySequence = other.warStrategySequence;
+        this.winCounter = other.winCounter;
+        this.warWinCounter = other.warWinCounter;
+    }
+
 
 }

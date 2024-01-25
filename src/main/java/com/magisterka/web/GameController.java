@@ -30,9 +30,9 @@ public class GameController {
         return gameService.compareStrength(strengthDTO);
     }
 
-    @GetMapping(value = "/compare/{strategy}")
-    public List<StatisticsDTO> compareStrategyWithBasicStrategies(@PathVariable String strategy) {
-        return gameService.compareStrategyWithBasicStrategies(strategy);
+    @PostMapping(value = "/compare")
+    public List<StatisticsDTO> compareStrategyWithBasicStrategies(@RequestBody PlayersStrategyDTO playersStrategyDTO) {
+        return gameService.compareStrategyWithBasicStrategies(playersStrategyDTO);
     }
 
     @PostMapping(value = "/statistics-with-cycles")
