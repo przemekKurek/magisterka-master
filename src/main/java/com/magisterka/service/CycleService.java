@@ -18,7 +18,9 @@ public class CycleService {
 
     private final GameService gameService;
 
-    private final int GAME_AMOUNT = 43;
+    private final int GAME_AMOUNT = 100;
+    private final Integer ROUND_LIMIT = 1000000;
+
 
     public StatisticsDTO getStatisticsWithCyclesForTwoPlayers(PlayersStrategyDTO playersStrategyDTO) {
         int player1WinsCounter = 0;
@@ -95,7 +97,7 @@ public class CycleService {
         boolean playerCannotPlayWar = false;
 
         int counter = 0;
-        while (GameUtils.playerHasCards(player1) && GameUtils.playerHasCards(player2) && counter < 10000) {
+        while (GameUtils.playerHasCards(player1) && GameUtils.playerHasCards(player2) && counter < ROUND_LIMIT) {
             if (GameUtils.getPlayerCard(player1).getRank() > GameUtils.getPlayerCard(player2).getRank()) {
                 gameService.handlePlayerWinWithStrategyAndSetRegister(player1, player2, true, register);
             } else if (Objects.equals(GameUtils.getPlayerCard(player1).getRank(), GameUtils.getPlayerCard(player2).getRank())) {
@@ -135,7 +137,7 @@ public class CycleService {
         GameUtils.assignCardsToPlayers(cards, player1, player2);
         boolean playerCannotPlayWar = false;
         int counter = 0;
-        while (GameUtils.playerHasCards(player1) && GameUtils.playerHasCards(player2) && counter < 1000000) {
+        while (GameUtils.playerHasCards(player1) && GameUtils.playerHasCards(player2) && counter < ROUND_LIMIT) {
             if (GameUtils.getPlayerCard(player1).getRank() > GameUtils.getPlayerCard(player2).getRank()) {
                 gameService.handlePlayerWinWithStrategyAndSetRegister(player1, player2, true, register);
             } else if (Objects.equals(GameUtils.getPlayerCard(player1).getRank(), GameUtils.getPlayerCard(player2).getRank())) {

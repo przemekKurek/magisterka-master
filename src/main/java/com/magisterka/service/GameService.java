@@ -14,6 +14,9 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class GameService {
 
+    private final Integer ROUND_LIMIT = 1000000;
+    private final Integer GAME_AMOUNT = 10000;
+
 
     public void handleWar(Player player1, Player player2, boolean firstWar, List<CardDTO> warCards) {
         Integer[] cardNumbers = new Integer[2];
@@ -346,7 +349,7 @@ public class GameService {
         boolean playerCannotPlayWar = false;
         int counter = 0;
         int warCounter = 0;
-        while (GameUtils.playerHasCards(player1) && GameUtils.playerHasCards(player2) && counter < 100000) {
+        while (GameUtils.playerHasCards(player1) && GameUtils.playerHasCards(player2) && counter < ROUND_LIMIT) {
             if (GameUtils.getPlayerCard(player1).getRank() > GameUtils.getPlayerCard(player2).getRank()) {
                 handlePlayerWinWithStrategy(player1, player2, true);
             } else if (Objects.equals(GameUtils.getPlayerCard(player1).getRank(), GameUtils.getPlayerCard(player2).getRank())) {
@@ -373,9 +376,8 @@ public class GameService {
         int player1WinsCounter = 0;
         int player2WinsCounter = 0;
         int drawCounter = 0;
-        int gameAmount = 10000;
         int roundsCounter = 0;
-        for (int i = 0; i < gameAmount; i++) {
+        for (int i = 0; i < GAME_AMOUNT; i++) {
             RoundInfo result = gameWithStrategies(playersStrategyDTO);
             if (result.getRoundResult() == 1) {
                 player1WinsCounter++;
@@ -390,11 +392,11 @@ public class GameService {
             roundsCounter += result.getRoundLength();
         }
         StatisticsDTO stats = new StatisticsDTO();
-        stats.setFirstPlayerWonGames(player1WinsCounter * 100.0 / gameAmount);
-        stats.setSecondPlayerWonGames(player2WinsCounter * 100.0 / gameAmount);
-        stats.setDraws(drawCounter * 100.0 / gameAmount);
+        stats.setFirstPlayerWonGames(player1WinsCounter * 100.0 / GAME_AMOUNT);
+        stats.setSecondPlayerWonGames(player2WinsCounter * 100.0 / GAME_AMOUNT);
+        stats.setDraws(drawCounter * 100.0 / GAME_AMOUNT);
         stats.setPlayersStrategyDTO(playersStrategyDTO);
-        stats.setAverageAmountOfRounds(roundsCounter / gameAmount);
+        stats.setAverageAmountOfRounds(roundsCounter / GAME_AMOUNT);
 
         return stats;
     }
@@ -436,9 +438,8 @@ public class GameService {
         int player1WinsCounter = 0;
         int player2WinsCounter = 0;
         int drawCounter = 0;
-        int gameAmount = 10000;
         int roundsCounter = 0;
-        for (int i = 0; i < gameAmount; i++) {
+        for (int i = 0; i < GAME_AMOUNT; i++) {
             RoundInfo result = gameWithStrategiesForStrenghtComparison(strengthDTO);
             if (result.getRoundResult() == 1) {
                 player1WinsCounter++;
@@ -454,11 +455,11 @@ public class GameService {
 
         }
         StatisticsDTO stats = new StatisticsDTO();
-        stats.setFirstPlayerWonGames(player1WinsCounter * 100.0 / gameAmount);
-        stats.setSecondPlayerWonGames(player2WinsCounter * 100.0 / gameAmount);
-        stats.setDraws(drawCounter * 100.0 / gameAmount);
+        stats.setFirstPlayerWonGames(player1WinsCounter * 100.0 / GAME_AMOUNT);
+        stats.setSecondPlayerWonGames(player2WinsCounter * 100.0 / GAME_AMOUNT);
+        stats.setDraws(drawCounter * 100.0 / GAME_AMOUNT);
         stats.setPlayersStrategyDTO(strengthDTO.getPlayersStrategyDTO());
-        stats.setAverageAmountOfRounds(roundsCounter / gameAmount);
+        stats.setAverageAmountOfRounds(roundsCounter / GAME_AMOUNT);
 
         return stats;
     }
@@ -482,7 +483,7 @@ public class GameService {
         boolean playerCannotPlayWar = false;
         int counter = 0;
         int warCounter = 0;
-        while (GameUtils.playerHasCards(player1) && GameUtils.playerHasCards(player2) && counter < 10000) {
+        while (GameUtils.playerHasCards(player1) && GameUtils.playerHasCards(player2) && counter < ROUND_LIMIT) {
             if (GameUtils.getPlayerCard(player1).getRank() > GameUtils.getPlayerCard(player2).getRank()) {
                 handlePlayerWinWithStrategy(player1, player2, true);
             } else if (Objects.equals(GameUtils.getPlayerCard(player1).getRank(), GameUtils.getPlayerCard(player2).getRank())) {
