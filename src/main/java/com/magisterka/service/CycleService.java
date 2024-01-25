@@ -97,10 +97,12 @@ public class CycleService {
         boolean playerCannotPlayWar = false;
 
         int counter = 0;
+        int warCounter = 0;
         while (GameUtils.playerHasCards(player1) && GameUtils.playerHasCards(player2) && counter < ROUND_LIMIT) {
             if (GameUtils.getPlayerCard(player1).getRank() > GameUtils.getPlayerCard(player2).getRank()) {
                 gameService.handlePlayerWinWithStrategyAndSetRegister(player1, player2, true, register);
             } else if (Objects.equals(GameUtils.getPlayerCard(player1).getRank(), GameUtils.getPlayerCard(player2).getRank())) {
+                warCounter++;
                 if (player1.getCards().size() == 1 || player2.getCards().size() == 1) {
                     playerCannotPlayWar = true;
                     break;
@@ -115,12 +117,13 @@ public class CycleService {
                     roundInfo.setRoundResult(0);
                     roundInfo.setCycle(register.toString());
                     roundInfo.setRoundLength(counter);
+                    roundInfo.setWarCounter(warCounter);
                     log.info(register.toString());
                     return roundInfo;
                 }
             }
         }
-        return GameUtils.getRoundInfo(roundInfo, player1, player2, playerCannotPlayWar, counter);
+        return GameUtils.getRoundInfo(roundInfo, player1, player2, playerCannotPlayWar, counter, warCounter);
     }
 
 
@@ -137,10 +140,12 @@ public class CycleService {
         GameUtils.assignCardsToPlayers(cards, player1, player2);
         boolean playerCannotPlayWar = false;
         int counter = 0;
+        int warCounter = 0;
         while (GameUtils.playerHasCards(player1) && GameUtils.playerHasCards(player2) && counter < ROUND_LIMIT) {
             if (GameUtils.getPlayerCard(player1).getRank() > GameUtils.getPlayerCard(player2).getRank()) {
                 gameService.handlePlayerWinWithStrategyAndSetRegister(player1, player2, true, register);
             } else if (Objects.equals(GameUtils.getPlayerCard(player1).getRank(), GameUtils.getPlayerCard(player2).getRank())) {
+                warCounter++;
                 if (player1.getCards().size() == 1 || player2.getCards().size() == 1) {
                     playerCannotPlayWar = true;
                     break;
@@ -155,13 +160,14 @@ public class CycleService {
                     register.clear();
                     player1.setStrategySequence("R");
                     player2.setStrategySequence("R");
-                    for (int i = 0; i < 2000; i++) {
+                    for (int i = 0; i < 10; i++) {
                         if (!GameUtils.playerHasCards(player1) || !GameUtils.playerHasCards(player2)) {
                             break;
                         }
                         if (GameUtils.getPlayerCard(player1).getRank() > GameUtils.getPlayerCard(player2).getRank()) {
                             gameService.handlePlayerWinWithStrategyAndSetRegister(player1, player2, true, register);
                         } else if (Objects.equals(GameUtils.getPlayerCard(player1).getRank(), GameUtils.getPlayerCard(player2).getRank())) {
+                            warCounter++;
                             gameService.handleWarAndSetRegister(player1, player2, true, new ArrayList<>(), register);
                         } else {
                             gameService.handlePlayerWinWithStrategyAndSetRegister(player1, player2, false, register);
@@ -176,7 +182,7 @@ public class CycleService {
                 register.subList(0, 2000).clear();
             }
         }
-        return GameUtils.getRoundInfo(roundInfo, player1, player2, playerCannotPlayWar, counter);
+        return GameUtils.getRoundInfo(roundInfo, player1, player2, playerCannotPlayWar, counter, warCounter);
     }
 
 

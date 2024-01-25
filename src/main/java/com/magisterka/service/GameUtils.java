@@ -45,8 +45,9 @@ public class GameUtils {
         cards.sort(Comparator.comparing(CardDTO::getCardNumber, Comparator.reverseOrder()));
     }
 
-    static RoundInfo getRoundInfo(RoundInfo roundInfo, Player player1, Player player2, boolean playerCannotPlayWar, int counter) {
+    static RoundInfo getRoundInfo(RoundInfo roundInfo, Player player1, Player player2, boolean playerCannotPlayWar, int counter, int warCounter) {
         roundInfo.setRoundLength(counter);
+        roundInfo.setWarCounter(warCounter);
         if (playerCannotPlayWar) {
             roundInfo.setRoundResult(player2.getCards().size() == 1 ? 1 : 2);
             return roundInfo;
