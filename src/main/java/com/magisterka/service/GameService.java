@@ -251,14 +251,18 @@ public class GameService {
                 } else if (greedyOption == 'S') {
                     Integer card1Rank = cardsToGet.get(0).getRank();
                     Integer card2Rank = cardsToGet.get(1).getRank();
-                    if (player2CardsToCompare.get(0).getRank() == 12 || player2CardsToCompare.get(1).getRank() == 12 || player2CardsToCompare.get(0).getRank() + player2CardsToCompare.get(1).getRank() > 18 ) {
+                    if (player2CardsToCompare.get(0).getRank() == 12 || player2CardsToCompare.get(1).getRank() == 12 || player2CardsToCompare.get(0).getRank() + player2CardsToCompare.get(1).getRank() > 18) {
                         GameUtils.sortCardsAscending(cardsToGet);
                     }
-                    if (card1Rank == 12 || card2Rank == 12 || card1Rank + card2Rank > 4) {
+                    else if (card1Rank == 12 || card2Rank == 12 || card1Rank + card2Rank > 4) {
                         GameUtils.sortCardsDescending(cardsToGet);
                     } else {
                         GameUtils.sortCardsAscending(cardsToGet);
                     }
+                } else if (greedyOption == 'C') {
+                    sortCardsStrategyC(player1, player2, cardsToGet);
+                } else if (greedyOption == 'Z') {
+                    sortCardsStrategyZ(player1, player2, cardsToGet);
                 } else {
                     if (moreAces) {
                         GameUtils.sortCardsDescending(cardsToGet);
@@ -267,6 +271,26 @@ public class GameService {
                     }
                 }
             }
+        }
+    }
+
+    private void sortCardsStrategyC(Player p1, Player p2, List<CardDTO> cardsToGet) {
+        Integer p1DeckStrength = calculateCardStrengthInDeck(p1);
+        Integer p2DeckStrength = calculateCardStrengthInDeck(p2);
+        if (p1DeckStrength > p2DeckStrength) {
+            GameUtils.sortCardsDescending(cardsToGet);
+        } else {
+            GameUtils.sortCardsAscending(cardsToGet);
+        }
+    }
+
+    private void sortCardsStrategyZ(Player p1, Player p2, List<CardDTO> cardsToGet) {
+        Integer p1DeckStrength = calculateCardStrengthInDeck(p1);
+        Integer p2DeckStrength = calculateCardStrengthInDeck(p2);
+        if (p1DeckStrength <= p2DeckStrength) {
+            GameUtils.sortCardsDescending(cardsToGet);
+        } else {
+            GameUtils.sortCardsAscending(cardsToGet);
         }
     }
 
@@ -502,11 +526,50 @@ public class GameService {
             counter++;
         }
         RoundInfo roundInfo = new RoundInfo();
-//        log.info("Player1 has " + player1.getCards().size() + " cards.");
-//        log.info("Player2 has " + player2.getCards().size() + " cards.");
-//        log.info("War counter " + warCounter);
-//        log.info("Round counter " + counter);
         return GameUtils.getRoundInfo(roundInfo, player1, player2, playerCannotPlayWar, counter, warCounter);
+    }
+
+    private Integer calculateCardStrengthInDeck(Player player) {
+        Integer deckStrength = 0;
+        for (CardDTO cardDTO : player.getCards()) {
+            Integer c = cardDTO.getRank();
+            deckStrength = deckStrength + getCardStrength(c);
+        }
+        return deckStrength / player.getCards().size();
+    }
+
+    private Integer getCardStrength(Integer cardRank) {
+        //calculated using min-max normalization
+        switch (cardRank) {
+            case 0:
+                return 0;
+            case 1:
+                return 45;
+            case 2:
+                return 317;
+            case 3:
+                return 397;
+            case 4:
+                return 476;
+            case 5:
+                return 635;
+            case 6:
+                return 1150;
+            case 7:
+                return 1720;
+            case 8:
+                return 2290;
+            case 9:
+                return 6050;
+            case 10:
+                return 10630;
+            case 11:
+                return 20750;
+            case 12:
+                return 100000;
+            default:
+                return 0;
+        }
     }
 
 

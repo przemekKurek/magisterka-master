@@ -15,5 +15,6 @@ public class StatisticsDTO {
     private PlayersStrategyDTO playersStrategyDTO;
     private double averageAmountOfRounds;
     private double averageAmountOfWars;
+    private double roundsWithCycles;
     private List<String> detectedCycles = new ArrayList<>();
 }
