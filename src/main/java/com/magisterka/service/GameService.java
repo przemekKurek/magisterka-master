@@ -295,7 +295,7 @@ public class GameService {
     }
 
     private void sortCardsGreedyProbability(Integer cardRank, List<CardDTO> cardsToGet) {
-        if (cardRank <= 2) {
+        if (cardRank <= 3) {
             GameUtils.sortCardsAscending(cardsToGet);
         } else {
             GameUtils.sortCardsDescending(cardsToGet);
