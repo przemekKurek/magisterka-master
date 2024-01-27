@@ -18,7 +18,7 @@ public class CycleService {
 
     private final GameService gameService;
 
-    private final int GAME_AMOUNT = 100;
+    private final int GAME_AMOUNT = 101;
     private final Integer ROUND_LIMIT = 1000000;
 
 
@@ -28,6 +28,7 @@ public class CycleService {
         int drawCounter = 0;
         int roundsCounter = 0;
         int warCounter = 0;
+        int cycleCounter = 0;
         StatisticsDTO stats = new StatisticsDTO();
         for (int i = 0; i < GAME_AMOUNT; i++) {
             RoundInfo roundInfo = gameWithCyclesFinder(playersStrategyDTO);
@@ -43,6 +44,7 @@ public class CycleService {
             roundsCounter += roundInfo.getRoundLength();
             warCounter += roundInfo.getWarCounter();
             if (roundInfo.getCycle() != null) {
+                cycleCounter++;
                 stats.getDetectedCycles().add(roundInfo.getCycle());
             }
         }
@@ -52,6 +54,7 @@ public class CycleService {
         stats.setPlayersStrategyDTO(playersStrategyDTO);
         stats.setAverageAmountOfRounds(roundsCounter / GAME_AMOUNT);
         stats.setAverageAmountOfWars(warCounter / GAME_AMOUNT);
+        stats.setRoundsWithCycles(cycleCounter * 100.0 / GAME_AMOUNT);
         return stats;
     }
 
@@ -62,6 +65,7 @@ public class CycleService {
         int drawCounter = 0;
         int roundsCounter = 0;
         int warCounter = 0;
+        int cycleCounter = 0;
         StatisticsDTO stats = new StatisticsDTO();
         for (int i = 0; i < GAME_AMOUNT; i++) {
             RoundInfo roundInfo = gameWithBreakingCycles(playersStrategyDTO);
@@ -77,6 +81,7 @@ public class CycleService {
             roundsCounter += roundInfo.getRoundLength();
             warCounter += roundInfo.getWarCounter();
             if (roundInfo.getCycle() != null) {
+                cycleCounter++;
                 stats.getDetectedCycles().add(roundInfo.getCycle());
             }
         }
@@ -86,6 +91,7 @@ public class CycleService {
         stats.setPlayersStrategyDTO(playersStrategyDTO);
         stats.setAverageAmountOfRounds(roundsCounter / GAME_AMOUNT);
         stats.setAverageAmountOfWars(warCounter / GAME_AMOUNT);
+        stats.setRoundsWithCycles(cycleCounter * 100.0 / GAME_AMOUNT);
         return stats;
     }
 
@@ -118,7 +124,7 @@ public class CycleService {
                 gameService.handlePlayerWinWithStrategyAndSetRegister(player1, player2, false, register);
             }
             counter++;
-            if (register.size() > 0 && register.size() % 2000 == 0) {
+            if (register.size() > 0 && register.size() > 520) {
                 if (hasRepeatingSubsequence(register).length() > 0) {
                     roundInfo.setRoundResult(0);
                     roundInfo.setCycle(register.toString());
@@ -127,6 +133,7 @@ public class CycleService {
                     log.info(register.toString());
                     return roundInfo;
                 }
+                register.clear();
             }
         }
         return GameUtils.getRoundInfo(roundInfo, player1, player2, playerCannotPlayWar, counter, warCounter);
@@ -161,12 +168,12 @@ public class CycleService {
                 gameService.handlePlayerWinWithStrategyAndSetRegister(player1, player2, false, register);
             }
             counter++;
-            if (register.size() % 2000 == 0) {
+            if (register.size() > 2000) {
                 if (hasRepeatingSubsequence(register).length() > 0) {
-                    register.clear();
+                    roundInfo.setCycle(register.toString());
                     player1.setStrategySequence("R");
                     player2.setStrategySequence("R");
-                    for (int i = 0; i < 10; i++) {
+                    for (int i = 0; i < 52; i++) {
                         if (!GameUtils.playerHasCards(player1) || !GameUtils.playerHasCards(player2)) {
                             break;
                         }
@@ -184,9 +191,7 @@ public class CycleService {
                     player2.setStrategySequence(playersStrategyDTO.getSecondPlayerStrategySequence());
                 }
             }
-            if (register.size() > 0 && register.size() % 4000 == 0) {
-                register.subList(0, 2000).clear();
-            }
+                register.clear();
         }
         return GameUtils.getRoundInfo(roundInfo, player1, player2, playerCannotPlayWar, counter, warCounter);
     }
@@ -194,7 +199,7 @@ public class CycleService {
 
     private String hasRepeatingSubsequence(List<Integer> register) {
         HashSet<String> seenSubsequences = new HashSet<>();
-        Integer subsequenceLength = 52*8;
+        Integer subsequenceLength = 52*2;
         for (int i = 0; i <= register.size() - subsequenceLength; i++) {
             StringBuilder subsequenceBuilder = new StringBuilder();
             for (int j = i; j < i + subsequenceLength; j++) {
