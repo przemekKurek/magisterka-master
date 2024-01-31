@@ -14,7 +14,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class GameService {
 
-    private final Integer ROUND_LIMIT = 1000000;
+    private final Integer ROUND_LIMIT = 100000;
     private final Integer GAME_AMOUNT = 10000;
 
 
@@ -166,7 +166,7 @@ public class GameService {
                 GameUtils.sortCardsAscending(cardsToGet);
             } else if (getStrategy(winnerOfTheRound) == 'R') {
                 GameUtils.shuffleDeck(cardsToGet);
-            } else if ("GANBPS".contains(String.valueOf(getStrategy(winnerOfTheRound)))) {
+            } else if ("GANBPSCZ".contains(String.valueOf(getStrategy(winnerOfTheRound)))) {
                 distributeCardsGreedy(cardsToGet, winnerOfTheRound, loserOfTheRound, getStrategy(winnerOfTheRound));
             }
         } else {
@@ -447,12 +447,33 @@ public class GameService {
         PlayersStrategyDTO greedyN = new PlayersStrategyDTO(strategy, warStrategy, "N", "R");
         StatisticsDTO compareToGreedyN = getStatisticsForTwoPlayers(greedyN);
 
+        PlayersStrategyDTO greedyP = new PlayersStrategyDTO(strategy, warStrategy, "P", "R");
+        StatisticsDTO compareToGreedyP = getStatisticsForTwoPlayers(greedyP);
+
+        PlayersStrategyDTO greedyS = new PlayersStrategyDTO(strategy, warStrategy, "S", "R");
+        StatisticsDTO compareToGreedyS = getStatisticsForTwoPlayers(greedyS);
+
+        PlayersStrategyDTO greedyB = new PlayersStrategyDTO(strategy, warStrategy, "B", "R");
+        StatisticsDTO compareToGreedyB = getStatisticsForTwoPlayers(greedyB);
+
+        PlayersStrategyDTO greedyC = new PlayersStrategyDTO(strategy, warStrategy, "C", "R");
+        StatisticsDTO compareToGreedyC = getStatisticsForTwoPlayers(greedyC);
+
+        PlayersStrategyDTO greedyZ = new PlayersStrategyDTO(strategy, warStrategy, "Z", "R");
+        StatisticsDTO compareToGreedyZ = getStatisticsForTwoPlayers(greedyZ);
+
+
         result.add(compareToRandom);
         result.add(compareToGetHigher);
         result.add(compareToGetLower);
         result.add(compareToGreedy);
         result.add(compareToGreedyA);
         result.add(compareToGreedyN);
+        result.add(compareToGreedyP);
+        result.add(compareToGreedyS);
+        result.add(compareToGreedyB);
+        result.add(compareToGreedyC);
+        result.add(compareToGreedyZ);
         return result;
     }
 
@@ -531,6 +552,9 @@ public class GameService {
 
     private Integer calculateCardStrengthInDeck(Player player) {
         Integer deckStrength = 0;
+        if (player.getCards().isEmpty()) {
+            return 0;
+        }
         for (CardDTO cardDTO : player.getCards()) {
             Integer c = cardDTO.getRank();
             deckStrength = deckStrength + getCardStrength(c);
