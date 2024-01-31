@@ -166,7 +166,7 @@ public class GameService {
                 GameUtils.sortCardsAscending(cardsToGet);
             } else if (getStrategy(winnerOfTheRound) == 'R') {
                 GameUtils.shuffleDeck(cardsToGet);
-            } else if ("GANBPSCZ".contains(String.valueOf(getStrategy(winnerOfTheRound)))) {
+            } else if ("GANBPSCZX".contains(String.valueOf(getStrategy(winnerOfTheRound)))) {
                 distributeCardsGreedy(cardsToGet, winnerOfTheRound, loserOfTheRound, getStrategy(winnerOfTheRound));
             }
         } else {
@@ -184,12 +184,17 @@ public class GameService {
         if (player1.getCards().size() >= player2.getCards().size()) {
             if (greedyOption == 'P') {
                 GameUtils.sortCardsDescending(cardsToGet);
-            } else {
+                }
+          else {
                 GameUtils.shuffleDeck(cardsToGet);
             }
         } else {
             if ((greedyOption == 'B' || greedyOption == 'P') && player1.getCards().size() + 4 >= player2.getCards().size()) {
                 greedyOption = 'G';
+            }
+            else if (greedyOption == 'X' && player1.getCards().size() + 2 >= player2.getCards().size()) {
+                GameUtils.sortCardsAscending(cardsToGet);
+                return;
             }
             int player1DeckSize = player1.getCards().size();
             List<CardDTO> player2CardsToCompare = new ArrayList<>();
@@ -213,6 +218,23 @@ public class GameService {
             boolean wb = c1 < p1 && c2 > p2;
             boolean we = c1 < p1 && c2 == p2;
             boolean ww = c1 < p1 && c2 < p2;
+            if (greedyOption == 'X') {
+                if ( bw || ww) {
+                    GameUtils.sortCardsAscending(cardsToGet);
+                } else if (bb || wb) {
+                    GameUtils.sortCardsDescending(cardsToGet);
+                } else {
+                    if (eb || ee || ew) {
+                        Integer c3 = player2.getCards().get(player1DeckSize + 2).getRank();
+                        sortCardsLoosingProbability(c3, cardsToGet);
+                    } else {
+                        Integer c4 = player2.getCards().get(player1DeckSize + 3).getRank();
+                        sortCardsLoosingProbability(c4, cardsToGet);
+                    }
+                }
+                return;
+
+            }
             if (bb || bw || ww) {
                 GameUtils.sortCardsDescending(cardsToGet);
             } else if (wb) {
@@ -271,6 +293,14 @@ public class GameService {
                     }
                 }
             }
+        }
+    }
+
+    private void sortCardsLoosingProbability(Integer cardRank, List<CardDTO> cardsToGet) {
+        if (cardRank > 3) {
+            GameUtils.sortCardsAscending(cardsToGet);
+        } else {
+            GameUtils.sortCardsDescending(cardsToGet);
         }
     }
 
